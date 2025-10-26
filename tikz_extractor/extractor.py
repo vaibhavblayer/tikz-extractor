@@ -289,11 +289,9 @@ def build_ai_context(metadata: List[Dict[str, any]], ai_file: Path) -> None:
     """
     with open(ai_file, "w", encoding="utf-8") as f:
         for i, block_meta in enumerate(metadata):
-            # Write source header
-            f.write(f"### Source: {block_meta['source']}\n")
-            # Write snippet filename
+            # Write snippet filename only (removed source header)
             snippet_name = Path(block_meta["out_path"]).name
-            f.write(f"### Snippet: {snippet_name}\n")
+            f.write(f"### {snippet_name}\n")
             # Write the TikZ content
             f.write(block_meta["content"])
             f.write("\n")
@@ -365,8 +363,9 @@ def extract_from_directory(
 
             # If blocks found, write them and collect metadata
             if tikz_blocks:
+                start_counter = len(all_metadata) + 1
                 metadata = write_extracted_blocks(
-                    tikz_blocks, file_path, out_dir, len(all_metadata) + 1
+                    tikz_blocks, file_path, out_dir, start_counter
                 )
                 all_metadata.extend(metadata)
 
