@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - N/A
 
+## [0.2.5] - 2024-12-26
+
+### Changed
+- Updated GitHub Actions workflow to trigger on tag pushes for automatic PyPI publishing
+
 ## [0.2.4] - 2024-12-26
 
 ### Fixed
