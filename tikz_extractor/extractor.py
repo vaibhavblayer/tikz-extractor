@@ -80,34 +80,77 @@ def find_files(src: Path, exts: List[str]) -> List[Path]:
 TIKZ_RE = re.compile(r"(?s)\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}")
 
 
+def _format_tikz_content(content: str) -> str:
+    """Format TikZ content with proper indentation and clean structure.
+    
+    Takes raw TikZ content and formats it with consistent indentation,
+    removes excessive whitespace, and ensures clean line breaks.
+    
+    Args:
+        content (str): Raw TikZ block content to format.
+        
+    Returns:
+        str: Formatted TikZ content with proper indentation.
+    """
+    lines = content.split('\n')
+    formatted_lines = []
+    indent_level = 0
+    
+    for line in lines:
+        # Remove leading/trailing whitespace
+        clean_line = line.strip()
+        
+        # Skip empty lines
+        if not clean_line:
+            continue
+            
+        # Decrease indent for end statements
+        if clean_line.startswith('\\end{'):
+            indent_level = max(0, indent_level - 1)
+            
+        # Add proper indentation
+        if clean_line.startswith('\\begin{tikzpicture}'):
+            formatted_lines.append(clean_line)
+            indent_level = 1
+        elif clean_line.startswith('\\end{tikzpicture}'):
+            formatted_lines.append(clean_line)
+        else:
+            # Indent content inside tikzpicture
+            formatted_lines.append('  ' + clean_line)
+    
+    # Join with newlines and ensure proper ending
+    result = '\n'.join(formatted_lines)
+    if not result.endswith('\n'):
+        result += '\n'
+        
+    return result
+
+
 def sanitize_name(path: Path) -> str:
     """Convert file paths to safe filename components.
 
-    Transforms a file path into a safe filename by replacing path separators
-    with double underscores. This ensures the resulting filename is valid
-    across different operating systems and file systems.
+    Transforms a file path into a safe filename by using just the filename
+    without the full path, making output filenames much shorter and cleaner.
 
     Args:
         path (Path): Path object to sanitize. Can be absolute or relative path.
 
     Returns:
-        str: Sanitized filename string safe for cross-platform use. Path
-            separators (both / and \\) are replaced with '__'.
+        str: Sanitized filename string safe for cross-platform use.
 
     Example:
         >>> from pathlib import Path
         >>> path = Path("src/diagrams/network.tex")
         >>> safe_name = sanitize_name(path)
-        >>> print(safe_name)  # Output: "src__diagrams__network.tex"
+        >>> print(safe_name)  # Output: "network.tex"
 
     Note:
-        This function handles both Unix-style (/) and Windows-style (\\)
-        path separators to ensure cross-platform compatibility.
+        This function now returns just the filename for cleaner output.
+        If there are naming conflicts, the directory structure will be
+        preserved in the AI context file headers.
     """
-    # Convert path to string and replace path separators with double underscores
-    path_str = str(path)
-    # Replace both forward slashes and backslashes for cross-platform compatibility
-    sanitized = path_str.replace("/", "__").replace("\\", "__")
+    # Just return the filename without the full path for cleaner names
+    sanitized = path.name
     return sanitized
 
 
@@ -147,7 +190,7 @@ def extract_tikz_from_text(text: str) -> List[str]:
 
 
 def write_extracted_blocks(
-    blocks: List[str], src_path: Path, out_dir: Path
+    blocks: List[str], src_path: Path, out_dir: Path, start_counter: int = 1
 ) -> List[Dict[str, any]]:
     """Write extracted TikZ blocks to individual .tex files and generate metadata.
 
@@ -177,11 +220,11 @@ def write_extracted_blocks(
         >>> src = Path("diagrams/flow.tex")
         >>> out = Path("./extracted")
         >>> metadata = write_extracted_blocks(blocks, src, out)
-        >>> print(metadata[0]['out_path'])  # diagrams__flow.tex__tikz1.tex
+        >>> print(metadata[0]['out_path'])  # tikz_1.tex
 
     Note:
-        Output filenames follow the pattern: {sanitized_source}__tikz{index}.tex
-        where sanitized_source replaces path separators with double underscores.
+        Output filenames follow the pattern: tikz_{index}.tex for cleaner,
+        shorter filenames. Source information is preserved in metadata.
     """
     # Create output directory if it doesn't exist
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -189,21 +232,25 @@ def write_extracted_blocks(
     metadata = []
     sanitized_source = sanitize_name(src_path)
 
-    for index, block in enumerate(blocks, 1):
-        # Generate unique filename for each block
-        filename = f"{sanitized_source}__tikz{index}.tex"
+    for index, block in enumerate(blocks):
+        # Generate unique filename for each block - much shorter now
+        global_index = start_counter + index
+        filename = f"tikz_{global_index}.tex"
         out_path = out_dir / filename
 
-        # Write block to file
+        # Format the TikZ content with proper indentation
+        formatted_block = _format_tikz_content(block)
+
+        # Write formatted block to file
         with open(out_path, "w", encoding="utf-8") as f:
-            f.write(block)
+            f.write(formatted_block)
 
         # Create metadata entry
         block_metadata = {
             "source": str(src_path),
             "out_path": str(out_path),
-            "index": index,
-            "content": block,
+            "index": global_index,
+            "content": formatted_block,
         }
         metadata.append(block_metadata)
 
@@ -318,7 +365,7 @@ def extract_from_directory(
 
             # If blocks found, write them and collect metadata
             if tikz_blocks:
-                metadata = write_extracted_blocks(tikz_blocks, file_path, out_dir)
+                metadata = write_extracted_blocks(tikz_blocks, file_path, out_dir, len(all_metadata) + 1)
                 all_metadata.extend(metadata)
 
         except (UnicodeDecodeError, IOError, OSError) as e:
