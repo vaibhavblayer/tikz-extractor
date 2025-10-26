@@ -1,11 +1,13 @@
 """Edge case and error handling tests for tikz_extractor."""
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
-from tikz_extractor import extractor
+
+import pytest
 from click.testing import CliRunner
+
+from tikz_extractor import extractor
 from tikz_extractor.cli import cli
 
 

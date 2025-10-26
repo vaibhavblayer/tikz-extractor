@@ -1,10 +1,11 @@
 """Pytest configuration and shared fixtures for tikz_extractor tests."""
 
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Dict, List
+
+import pytest
 
 
 @pytest.fixture

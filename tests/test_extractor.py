@@ -1,7 +1,9 @@
 """Unit tests for core extraction functions in tikz_extractor.extractor module."""
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from tikz_extractor import extractor
 
 

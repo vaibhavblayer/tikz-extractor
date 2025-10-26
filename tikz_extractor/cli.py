@@ -17,9 +17,10 @@ Example:
     $ tikz-extract --ai-file custom_context.txt
 """
 
-import click
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
+
+import click
 
 from . import extractor
 

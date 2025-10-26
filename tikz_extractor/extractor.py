@@ -24,7 +24,7 @@ Example:
 
 import re
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 def find_files(src: Path, exts: List[str]) -> List[Path]:

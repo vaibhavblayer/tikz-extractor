@@ -45,14 +45,14 @@ __license__ = "MIT"
 __all__ = ["extractor", "cli"]
 
 # Import modules for programmatic access
-from . import extractor, cli
+from . import cli, extractor
 
 # Convenience imports for common use cases
 from .extractor import (
+    build_ai_context,
     extract_from_directory,
     extract_tikz_from_text,
     find_files,
-    build_ai_context,
-    write_extracted_blocks,
     sanitize_name,
+    write_extracted_blocks,
 )
