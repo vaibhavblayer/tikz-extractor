@@ -32,7 +32,7 @@ class TestExtractFromDirectory:
             assert "index" in meta
             assert "content" in meta
             assert meta["content"].startswith(r"\begin{tikzpicture}")
-            assert meta["content"].endswith(r"\end{tikzpicture}")
+            assert meta["content"].strip().endswith(r"\end{tikzpicture}")
 
     def test_extract_from_directory_file_creation(self, test_file_structure):
         """Test that extracted files are actually created."""
@@ -67,8 +67,9 @@ class TestExtractFromDirectory:
 
         # Should have found 2 blocks from multiple_tikz.tex
         assert len(multiple_tikz_metadata) == 2
-        assert multiple_tikz_metadata[0]["index"] == 1
-        assert multiple_tikz_metadata[1]["index"] == 2
+        # Indices are now global, so they might not be 1,2 depending on processing order
+        indices = [meta["index"] for meta in multiple_tikz_metadata]
+        assert len(set(indices)) == 2  # Should be unique indices
 
         # Verify different content
         assert (
@@ -180,11 +181,10 @@ class TestCompleteWorkflow:
         # Verify AI context contains all extracted blocks
         for meta in metadata:
             assert meta["content"] in ai_content
-            assert meta["source"] in ai_content
+            # Source info is now in the filename, not as separate header
 
-        # Verify format
-        assert "### Source:" in ai_content
-        assert "### Snippet:" in ai_content
+        # Verify format - now uses simple tikz_N.tex headers
+        assert "### tikz_" in ai_content
 
         if len(metadata) > 1:
             assert "---" in ai_content  # Separators between blocks
@@ -210,10 +210,8 @@ class TestCompleteWorkflow:
             file_content = out_path.read_text(encoding="utf-8")
             assert file_content == meta["content"]
 
-            # Check filename format
-            expected_filename = (
-                f"{extractor.sanitize_name(source_path)}__tikz{meta['index']}.tex"
-            )
+            # Check filename format - now uses simple tikz_N.tex naming
+            expected_filename = f"tikz_{meta['index']}.tex"
             assert out_path.name == expected_filename
 
     def test_workflow_file_output_correctness(self, test_file_structure):
@@ -231,7 +229,7 @@ class TestCompleteWorkflow:
 
             # Should be valid TikZ block
             assert content.startswith(r"\begin{tikzpicture}")
-            assert content.endswith(r"\end{tikzpicture}")
+            assert content.strip().endswith(r"\end{tikzpicture}")
 
             # Should match metadata content exactly
             assert content == meta["content"]
@@ -287,6 +285,8 @@ class TestCompleteWorkflow:
 
         # Verify AI context includes all blocks
         ai_content = ai_file.read_text(encoding="utf-8")
-        assert "root.tex" in ai_content
-        assert "mid.tex" in ai_content
-        assert "deep.tex" in ai_content
+        # Check that tikz files are referenced in AI context
+        assert "tikz_1.tex" in ai_content
+        assert "tikz_2.tex" in ai_content
+        assert "tikz_3.tex" in ai_content
+        # Source filenames are no longer in AI context, only tikz_N.tex names

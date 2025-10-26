@@ -8,12 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project structure and core functionality
-- Command-line interface with Click framework
-- Core TikZ extraction engine with regex pattern matching
-- Comprehensive test suite with pytest
-- GitHub Actions CI/CD pipeline
-- Documentation and packaging configuration
+- N/A
 
 ### Changed
 - N/A
@@ -29,6 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - N/A
+
+## [0.2.4] - 2024-12-26
+
+### Fixed
+- Fixed CLI filename collision bug where multiple TikZ blocks would overwrite each other
+- Added proper global counter tracking across files in CLI extraction
+- Improved TikZ content formatting with consistent indentation in both individual files and AI context
+
+### Changed
+- Simplified output filenames to use `tikz_N.tex` format for cleaner naming
+- Enhanced AI context file format with consistent TikZ block formatting
 
 ## [0.1.0] - 2024-01-XX
 

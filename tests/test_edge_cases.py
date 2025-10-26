@@ -140,7 +140,7 @@ class TestMultipleTikzBlocks:
         # Verify each block is complete
         for content in contents:
             assert content.startswith(r"\begin{tikzpicture}")
-            assert content.endswith(r"\end{tikzpicture}")
+            assert content.strip().endswith(r"\end{tikzpicture}")
 
     def test_extract_nested_tikz_environments(self, temp_dir):
         """Test extracting TikZ blocks with nested environments."""

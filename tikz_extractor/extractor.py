@@ -129,8 +129,9 @@ def _format_tikz_content(content: str) -> str:
 def sanitize_name(path: Path) -> str:
     """Convert file paths to safe filename components.
 
-    Transforms a file path into a safe filename by using just the filename
-    without the full path, making output filenames much shorter and cleaner.
+    Transforms a file path into a safe filename by replacing path separators
+    with double underscores and handling special characters that might cause
+    issues in filenames across different operating systems.
 
     Args:
         path (Path): Path object to sanitize. Can be absolute or relative path.
@@ -142,15 +143,16 @@ def sanitize_name(path: Path) -> str:
         >>> from pathlib import Path
         >>> path = Path("src/diagrams/network.tex")
         >>> safe_name = sanitize_name(path)
-        >>> print(safe_name)  # Output: "network.tex"
+        >>> print(safe_name)  # Output: "src__diagrams__network.tex"
 
     Note:
-        This function now returns just the filename for cleaner output.
-        If there are naming conflicts, the directory structure will be
-        preserved in the AI context file headers.
+        This function replaces both forward slashes (/) and backslashes (\)
+        with double underscores (__) to ensure cross-platform compatibility.
     """
-    # Just return the filename without the full path for cleaner names
-    sanitized = path.name
+    # Convert path to string and replace separators with double underscores
+    path_str = str(path)
+    # Replace both forward and back slashes
+    sanitized = path_str.replace("/", "__").replace("\\", "__")
     return sanitized
 
 
@@ -233,7 +235,7 @@ def write_extracted_blocks(
     sanitized_source = sanitize_name(src_path)
 
     for index, block in enumerate(blocks):
-        # Generate unique filename for each block - much shorter now
+        # Generate unique filename for each block - simple numbering
         global_index = start_counter + index
         filename = f"tikz_{global_index}.tex"
         out_path = out_dir / filename
@@ -289,7 +291,7 @@ def build_ai_context(metadata: List[Dict[str, any]], ai_file: Path) -> None:
     """
     with open(ai_file, "w", encoding="utf-8") as f:
         for i, block_meta in enumerate(metadata):
-            # Write snippet filename only (removed source header)
+            # Write just the snippet filename for cleaner output
             snippet_name = Path(block_meta["out_path"]).name
             f.write(f"### {snippet_name}\n")
             # Write the TikZ content

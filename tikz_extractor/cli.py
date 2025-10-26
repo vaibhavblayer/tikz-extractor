@@ -204,8 +204,9 @@ def _perform_extraction(
                         )
                     else:
                         # Actually write the blocks using core extractor function
+                        start_counter = len(all_metadata) + 1
                         metadata = extractor.write_extracted_blocks(
-                            tikz_blocks, file_path, out_path
+                            tikz_blocks, file_path, out_path, start_counter
                         )
 
                     all_metadata.extend(metadata)

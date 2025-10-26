@@ -190,12 +190,14 @@ class TestWriteExtractedBlocks:
         assert len(metadata) == 1
         assert metadata[0]["source"] == str(src_path)
         assert metadata[0]["index"] == 1
-        assert metadata[0]["content"] == sample_tikz_content["simple"]
+        # Content should be formatted (single line content gets newline added)
+        expected_content = sample_tikz_content["simple"] + "\n"
+        assert metadata[0]["content"] == expected_content
 
         # Check that file was actually written
         out_path = Path(metadata[0]["out_path"])
         assert out_path.exists()
-        assert out_path.read_text(encoding="utf-8") == sample_tikz_content["simple"]
+        assert out_path.read_text(encoding="utf-8") == expected_content
 
     def test_write_multiple_blocks(self, temp_dir, sample_tikz_content):
         """Test writing multiple TikZ blocks to separate files."""
@@ -237,10 +239,9 @@ class TestWriteExtractedBlocks:
 
         metadata = extractor.write_extracted_blocks(blocks, src_path, out_dir)
 
-        # Check filename format
-        expected_base = "src__nested__file.tex"
-        assert f"{expected_base}__tikz1.tex" in metadata[0]["out_path"]
-        assert f"{expected_base}__tikz2.tex" in metadata[1]["out_path"]
+        # Check filename format - now uses simple tikz_N.tex naming
+        assert "tikz_1.tex" in metadata[0]["out_path"]
+        assert "tikz_2.tex" in metadata[1]["out_path"]
 
     def test_write_empty_blocks_list(self, temp_dir):
         """Test writing an empty list of blocks."""
@@ -267,9 +268,8 @@ class TestBuildAiContext:
         assert ai_file.exists()
         content = ai_file.read_text(encoding="utf-8")
 
-        # Check format
-        assert "### Source:" in content
-        assert "### Snippet:" in content
+        # Check format - now uses simple filename headers
+        assert "### source1__tikz1.tex" in content
         assert sample_metadata[0]["content"] in content
         assert "---" not in content  # No separator for single block
 
@@ -282,10 +282,9 @@ class TestBuildAiContext:
         assert ai_file.exists()
         content = ai_file.read_text(encoding="utf-8")
 
-        # Check that both blocks are present
-        for meta in sample_metadata:
-            assert meta["source"] in content
-            assert meta["content"] in content
+        # Check that both blocks are present by their filenames
+        assert "source1__tikz1.tex" in content
+        assert "source2__tikz1.tex" in content
 
         # Check separator between blocks
         assert "---" in content
@@ -303,9 +302,8 @@ class TestBuildAiContext:
         content = ai_file.read_text(encoding="utf-8")
         lines = content.split("\n")
 
-        # Check header format for first block
-        assert lines[0].startswith("### Source:")
-        assert lines[1].startswith("### Snippet:")
+        # Check header format for first block - now uses simple filename
+        assert lines[0].startswith("### source1__tikz1.tex")
         assert sample_metadata[0]["content"] in content
 
     def test_build_ai_context_empty_metadata(self, temp_dir):
