@@ -1,13 +1,16 @@
-[project]
+
+
+
+[tool.poetry]
 name = "tikz-extractor"
 version = "0.1.0"
 description = "A Python package for extracting TikZ picture environments from codebases and generating AI context files"
-authors = [
-    {name = "vaibhavblayer", email = "vaibhavblayer@gmail.com"}
-]
+authors = ["vaibhavblayer <vaibhavblayer@gmail.com>"]
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.10"
+license = "MIT"
+homepage = "https://github.com/vaibhavblayer/tikz-extractor"
+repository = "https://github.com/vaibhavblayer/tikz-extractor"
+documentation = "https://github.com/vaibhavblayer/tikz-extractor"
 keywords = ["tikz", "latex", "extraction", "cli", "ai-context", "tex", "tikzpicture"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -22,33 +25,27 @@ classifiers = [
     "Topic :: Text Processing :: Markup :: LaTeX",
     "Topic :: Utilities",
 ]
-dependencies = [
-    "click>=8.0.0",
-]
+packages = [{include = "tikz_extractor"}]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "flake8>=6.0.0",
-    "mypy>=1.0.0",
-    "isort>=5.12.0",
-    "safety>=2.3.0",
-    "bandit>=1.7.0",
-]
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.0.0"
 
-[project.scripts]
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+pytest-cov = "^4.0.0"
+black = "^23.0.0"
+flake8 = "^6.0.0"
+mypy = "^1.0.0"
+isort = "^5.12.0"
+safety = "^2.3.0"
+bandit = "^1.7.0"
+
+[tool.poetry.scripts]
 tikz-extract = "tikz_extractor.cli:cli"
 
-[project.urls]
-Homepage = "https://github.com/vaibhavblayer/tikz-extractor"
-Repository = "https://github.com/vaibhavblayer/tikz-extractor"
-Issues = "https://github.com/vaibhavblayer/tikz-extractor/issues"
-
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
