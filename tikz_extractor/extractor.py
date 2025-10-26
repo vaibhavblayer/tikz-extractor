@@ -82,47 +82,47 @@ TIKZ_RE = re.compile(r"(?s)\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}")
 
 def _format_tikz_content(content: str) -> str:
     """Format TikZ content with proper indentation and clean structure.
-    
+
     Takes raw TikZ content and formats it with consistent indentation,
     removes excessive whitespace, and ensures clean line breaks.
-    
+
     Args:
         content (str): Raw TikZ block content to format.
-        
+
     Returns:
         str: Formatted TikZ content with proper indentation.
     """
-    lines = content.split('\n')
+    lines = content.split("\n")
     formatted_lines = []
     indent_level = 0
-    
+
     for line in lines:
         # Remove leading/trailing whitespace
         clean_line = line.strip()
-        
+
         # Skip empty lines
         if not clean_line:
             continue
-            
+
         # Decrease indent for end statements
-        if clean_line.startswith('\\end{'):
+        if clean_line.startswith("\\end{"):
             indent_level = max(0, indent_level - 1)
-            
+
         # Add proper indentation
-        if clean_line.startswith('\\begin{tikzpicture}'):
+        if clean_line.startswith("\\begin{tikzpicture}"):
             formatted_lines.append(clean_line)
             indent_level = 1
-        elif clean_line.startswith('\\end{tikzpicture}'):
+        elif clean_line.startswith("\\end{tikzpicture}"):
             formatted_lines.append(clean_line)
         else:
             # Indent content inside tikzpicture
-            formatted_lines.append('  ' + clean_line)
-    
+            formatted_lines.append("  " + clean_line)
+
     # Join with newlines and ensure proper ending
-    result = '\n'.join(formatted_lines)
-    if not result.endswith('\n'):
-        result += '\n'
-        
+    result = "\n".join(formatted_lines)
+    if not result.endswith("\n"):
+        result += "\n"
+
     return result
 
 
@@ -365,7 +365,9 @@ def extract_from_directory(
 
             # If blocks found, write them and collect metadata
             if tikz_blocks:
-                metadata = write_extracted_blocks(tikz_blocks, file_path, out_dir, len(all_metadata) + 1)
+                metadata = write_extracted_blocks(
+                    tikz_blocks, file_path, out_dir, len(all_metadata) + 1
+                )
                 all_metadata.extend(metadata)
 
         except (UnicodeDecodeError, IOError, OSError) as e:
